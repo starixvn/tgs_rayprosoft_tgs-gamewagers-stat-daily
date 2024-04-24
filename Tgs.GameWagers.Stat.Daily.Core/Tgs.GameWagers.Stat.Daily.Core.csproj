@@ -7,8 +7,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="PhoenixToolkits.MessageQueue" Version="2.1.0" />
-		<PackageReference Include="PhoenixToolkits.MessageQueue.Nats" Version="2.1.2" />
+		<PackageReference Include="PhoenixToolkits.MessageQueue" Version="2.2.0" />
+		<PackageReference Include="PhoenixToolkits.MessageQueue.Nats" Version="2.2.0" />
 		<PackageReference Include="StackExchange.Redis" Version="2.7.33" />
 		<PackageReference Include="System.Linq.Async" Version="6.0.1" />
 		<PackageReference Include="Tgs.GameWagers.Stat.Hourly.Client" Version="1.0.3" />
