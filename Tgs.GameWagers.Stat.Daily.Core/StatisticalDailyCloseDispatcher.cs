@@ -6,8 +6,9 @@ namespace Tgs.GameWagers.Stat.Daily.Core;
 
 internal class StatisticalDailyCloseDispatcher(IServiceProvider serviceProvider) : IStatisticalDailyCloseDispatcher, IDisposable, IAsyncDisposable
 {
-	private readonly CancellationTokenSource _cancellationTokenSource = new();
 	private readonly ConcurrentDictionary<string, StatisticalDailyCloseChannel> _counters = new();
+	private readonly CancellationTokenSource _cancellationTokenSource = new();
+
 	private bool _disposedValue;
 
 	~StatisticalDailyCloseDispatcher()
@@ -15,63 +16,13 @@ internal class StatisticalDailyCloseDispatcher(IServiceProvider serviceProvider)
 		Dispose(false);
 	}
 
-	public void Dispose()
+	public async ValueTask PushRequestAsync(StatDailyCloseRequest request, CancellationToken cancellationToken = default)
 	{
-		// 請勿變更此程式碼。請將清除程式碼放入 'Dispose(bool disposing)' 方法
-		Dispose(disposing: true);
-		GC.SuppressFinalize(this);
-	}
-
-	public ValueTask DisposeAsync()
-	{
-		Dispose(true);
-		GC.SuppressFinalize(this);
-
-		return ValueTask.CompletedTask;
-	}
-
-	public async ValueTask PushCommandAsync(
-		StatDailyCloseCommand command,
-		CancellationToken cancellationToken = default)
-	{
-		using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancellationTokenSource.Token);
-		var key = string.Join('-', new[] { command.ResellerCode, command.LicenseeCode, command.BrandCode });
-		//var key = typeof(StatisticalDailyCloseDispatcher).FullName!;
-		if (!_counters.TryGetValue(key, out StatisticalDailyCloseChannel? channel))
-		{
-			await InitAsync(
-				key: key,
-				cancellationToken: cts.Token)
-				.ConfigureAwait(false);
-
-			channel = _counters.GetValueOrDefault(key)!;
-		}
-
-		await channel.PushCommandAsync(command, cts.Token).ConfigureAwait(false);
-	}
-
-	protected virtual void Dispose(bool disposing)
-	{
-		if (!_disposedValue)
-		{
-			if (disposing)
-			{
-				_cancellationTokenSource.Cancel();
-			}
-
-			_cancellationTokenSource.Dispose();
-			_disposedValue = true;
-		}
-	}
-
-	private ValueTask InitAsync(
-		string key,
-		CancellationToken cancellationToken = default)
-	{
+		var key = "dispatcher";
 		using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancellationTokenSource.Token);
 		var counter = _counters.GetOrAdd(
-			key: key,
-			valueFactory: key =>
+			key,
+			key =>
 			{
 				var scope = serviceProvider.CreateScope();
 				var newCounter = ActivatorUtilities.CreateInstance<StatisticalDailyCloseChannel>(
@@ -87,6 +38,36 @@ internal class StatisticalDailyCloseDispatcher(IServiceProvider serviceProvider)
 				return newCounter;
 			});
 
-		return counter.InitAsync(cts.Token);
+		await counter.PrepareAsync(cts.Token).ConfigureAwait(false);
+		await counter.PushRequestAsync(request, cts.Token).ConfigureAwait(false);
+	}
+
+	public ValueTask DisposeAsync()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+
+		return ValueTask.CompletedTask;
+	}
+
+	public void Dispose()
+	{
+		// 請勿變更此程式碼。請將清除程式碼放入 'Dispose(bool disposing)' 方法
+		Dispose(disposing: true);
+		GC.SuppressFinalize(this);
+	}
+
+	protected virtual void Dispose(bool disposing)
+	{
+		if (!_disposedValue)
+		{
+			if (disposing)
+			{
+				_cancellationTokenSource.Cancel();
+			}
+
+			_cancellationTokenSource.Dispose();
+			_disposedValue = true;
+		}
 	}
 }

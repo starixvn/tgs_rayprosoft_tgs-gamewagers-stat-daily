@@ -8,10 +8,7 @@ public static class ServiceCollectionExtensions
 	public static IServiceCollection AddGameWagersStatDailyCore(
 		this IServiceCollection services)
 		=> services
-		.RegisterAllServiceUtilityTypes(
-			Assembly.GetExecutingAssembly(),
-			ServiceLifetime.Transient)
+		.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()))
 		.AddSingleton<IStatisticalDailyCloseDispatcher, StatisticalDailyCloseDispatcher>()
-		.AddSingleton<IStatisticalDailyZoneCloseDispatcher, StatisticalDailyZoneCloseDispatcher>()
 		.AddSingleton<IStatisticalTimeUtnsil, StatisticalTimeUtnsil>();
 }
