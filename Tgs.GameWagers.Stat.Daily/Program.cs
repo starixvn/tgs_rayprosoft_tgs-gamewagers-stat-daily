@@ -64,8 +64,7 @@ builder.Services
 	.AddMessageQueue()
 	.AddNatsMessageQueue(config => config
 	.ConfigureResolveConnection(sp => sp.GetRequiredKeyedService<NatsConnection>("Nats"))
-	.AddHandler<StatisticalDailyCloseMessageHandler>(GameWagersStatHourlyNatsConst.StatHourlyCloseFinish, typeof(StatisticalDailyCloseMessageHandler).FullName!.ToLower())
-	.AddHandler<StatisticalDailyZoneCloseMessageHandler>(GameWagersStatHourlyNatsConst.StatHourlyCloseZoneFinish, typeof(StatisticalDailyZoneCloseMessageHandler).FullName!.ToLower()))
+	.AddHandler<StatisticalDailyCloseMessageHandler>(GameWagersStatHourlyNatsConst.StatHourlyCloseFinish, typeof(StatisticalDailyCloseMessageHandler).FullName!.ToLower()))
 	.ClearAllExchanges()
 	.AddNatsGlobPatternExchange(GameWagersStatDailyNatsConst.StatDailyCloseFinish)
 	.AddNatsGlobPatternExchange(GameWagersStatDailyNatsConst.StatDailyCloseZoneFinish);
@@ -78,6 +77,7 @@ builder.Services
 		.AddSource("Tgs.*")
 		.AddSource("TGS.*")
 		.AddSource("Valhalla.*")
+		.AddSource("MediatR")
 		.AddAspNetCoreInstrumentation(options => options.Filter =
 			httpContext => !httpContext.Request.Path.HasValue
 			|| !httpContext.Request.Path.StartsWithSegments("/swagger")
